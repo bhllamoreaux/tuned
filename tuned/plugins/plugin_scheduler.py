@@ -1345,7 +1345,12 @@ class SchedulerPlugin(base.Plugin):
 		irq_original = self._storage.get(self._irq_storage_key, None)
 		irqs = procfs.interrupts()
 		res = True
+		arch = os.uname().machine
 		for irq in irqs.keys():
+			# don't bother to check irq 0 on x86 (should be reserved for system timer and cannot be moved)
+			if irq == '0' and arch[0:3] == "x86":
+				continue
+
 			if irq in irq_original.unchangeable and ignore_missing:
 				description = "IRQ %s does not support changing SMP affinity" % irq
 				log.info(consts.STR_VERIFY_PROFILE_VALUE_MISSING % description)
